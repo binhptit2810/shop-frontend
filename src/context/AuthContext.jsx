@@ -32,9 +32,16 @@ export const AuthProvider = ({ children }) => {
       setUser({ username, email, role });
       return { success: true };
     } catch (error) {
+      console.error("Login error:", error);
+      let errMsg = 'Tên đăng nhập hoặc mật khẩu không chính xác';
+      if (!error.response) {
+        errMsg = 'Không thể kết nối đến máy chủ API. Vui lòng kiểm tra mạng hoặc thử lại sau!';
+      } else if (error.response.data && error.response.data.message) {
+        errMsg = error.response.data.message;
+      }
       return {
         success: false,
-        message: error.response?.data?.message || 'Tên đăng nhập hoặc mật khẩu không chính xác'
+        message: errMsg
       };
     }
   };
