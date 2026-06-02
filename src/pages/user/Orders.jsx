@@ -36,6 +36,21 @@ const Orders = () => {
     }
   };
 
+  const handleCancelOrder = async (orderId) => {
+    if (!window.confirm("Bạn có chắc chắn muốn hủy đơn hàng này?")) {
+      return;
+    }
+    try {
+      await API.put(`/orders/${orderId}/cancel`);
+      showToast("Hủy đơn hàng thành công!", "success");
+      fetchOrderHistory();
+    } catch (error) {
+      console.error("Lỗi khi hủy đơn hàng:", error);
+      const message = error.response?.data?.message || "Không thể hủy đơn hàng.";
+      showToast(message, "error");
+    }
+  };
+
   const getStatusClass = (status) => {
     switch (status) {
       case 'PENDING': return 'status-pending';
@@ -249,6 +264,38 @@ const Orders = () => {
                   </div>
                 </div>
 
+                {order.orderStatus === 'PENDING' && (
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+                    <button 
+                      onClick={() => handleCancelOrder(order.id)}
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '6px', 
+                        padding: '8px 16px', 
+                        borderRadius: '8px', 
+                        fontSize: '14px', 
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        background: 'transparent',
+                        border: '1px solid #ef4444',
+                        color: '#ef4444',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseOver={(e) => {
+                        e.target.style.background = '#ef4444';
+                        e.target.style.color = '#fff';
+                      }}
+                      onMouseOut={(e) => {
+                        e.target.style.background = 'transparent';
+                        e.target.style.color = '#ef4444';
+                      }}
+                    >
+                      <XCircle size={16} />
+                      Hủy đơn hàng
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}
