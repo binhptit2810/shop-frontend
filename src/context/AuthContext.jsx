@@ -8,15 +8,33 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const username = localStorage.getItem('username');
-    const email = localStorage.getItem('email');
-    const role = localStorage.getItem('role');
+    const checkUserSession = async () => {
+      const token = localStorage.getItem('token');
+      const username = localStorage.getItem('username');
+      const email = localStorage.getItem('email');
+      const role = localStorage.getItem('role');
 
-    if (token && username && role) {
-      setUser({ username, email, role });
-    }
-    setLoading(false);
+      if (token && username && role) {
+        try {
+          // Gửi request lên backend để kiểm tra xem token còn hợp lệ và tài khoản có bị khóa/xóa không
+          const response = await API.get('/auth/me');
+          const data = response.data;
+          setUser({ username: data.username, email: data.email, role: data.role });
+        } catch (error) {
+          console.error("Xác thực token thất bại hoặc tài khoản bị khóa/xóa:", error);
+          localStorage.removeItem('token');
+          localStorage.removeItem('username');
+          localStorage.removeItem('email');
+          localStorage.removeItem('role');
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    };
+
+    checkUserSession();
   }, []);
 
   const login = async (username, password) => {
